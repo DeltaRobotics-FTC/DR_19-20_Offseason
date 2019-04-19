@@ -19,6 +19,7 @@ public class MecanumDrive extends LinearOpMode
     DcMotor motorLF = null;
     DcMotor motorRB = null;
     DcMotor motorLB = null;
+    DcMotor shooter = null;
 
     Drive_MK2 drive = new Drive_MK2();
 
@@ -29,12 +30,16 @@ public class MecanumDrive extends LinearOpMode
         motorRB = hardwareMap.dcMotor.get("motorRB");
         motorLF = hardwareMap.dcMotor.get("motorLF");
         motorLB = hardwareMap.dcMotor.get("motorLB");
+        shooter = hardwareMap.dcMotor.get("shooter");
 
         //Setting motors to brake when stopped
         motorRF.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         motorLF.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         motorLB.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         motorRB.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        int target = 1680;
 
         waitForStart();
         while (opModeIsActive())
@@ -57,8 +62,18 @@ public class MecanumDrive extends LinearOpMode
             telemetry.addData("motor LF power", motorLF.getPower());
             telemetry.addData("Motor RB power", motorRB.getPower());
             telemetry.addData("Motor LB power", motorLB.getPower());
-
+            telemetry.addData("shooter", shooter.getCurrentPosition());
             telemetry.update();
+
+
+            if(gamepad2.dpad_left){
+                shooter.setPower(-0.75);
+                while(shooter.getCurrentPosition() < target){
+                    sleep(10);
+                }
+                shooter.setPower(0);
+                target += 1680;
+            }
     }
 
     }
