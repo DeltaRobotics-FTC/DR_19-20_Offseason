@@ -66,9 +66,11 @@ public class MecanumDrive extends LinearOpMode
             telemetry.update();
 
 
-            if(gamepad2.dpad_left){
-                shooter.setPower(-0.75);
-                while(shooter.getCurrentPosition() < target){
+            if(gamepad1.dpad_left)
+            {
+                shooter.setPower(0.75);
+                while(shooter.getCurrentPosition() < target)
+                {
                     sleep(10);
                 }
                 shooter.setPower(0);
