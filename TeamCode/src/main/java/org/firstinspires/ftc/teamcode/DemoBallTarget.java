@@ -2,8 +2,15 @@ package org.firstinspires.ftc.teamcode;
 
 import android.graphics.Bitmap;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
+
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 import for_camera_opmodes.LinearOpModeCamera;
 
@@ -37,18 +44,24 @@ public class DemoBallTarget extends LinearOpModeCamera {
 
 
 
-    //Conversion factor from pixels to degrees - needs to be set
-    final double PIXEL_DEGREES = 0;
+    //Conversion factor from pixels to degrees
+    final double PIXEL_DEGREES = 0.0224;
     //Conversion factor from pixels to encoder counts
     final double PIXEL_ENCODER = 0.694;
 
+    int firstReadingBallXPixel = 0;
+    int firstReadingBallYPixel = 0;
+
     Drive_MK2 drive = new Drive_MK2();
+
+    BNO055IMU imu;
+    Orientation angles;
 
 
     @Override
     public void runOpMode() {
         //Maps motor objects to name in robot configuration
-        motorRF = hardwareMap.dcMotor.get("motorRF");
+        /*motorRF = hardwareMap.dcMotor.get("motorRF");
         motorRB = hardwareMap.dcMotor.get("motorRB");
         motorLF = hardwareMap.dcMotor.get("motorLF");
         motorLB = hardwareMap.dcMotor.get("motorLB");
@@ -67,6 +80,20 @@ public class DemoBallTarget extends LinearOpModeCamera {
         motors[2] = motorLB;
         motors[3] = motorLF;
 
+        BNO055IMU.Parameters parametersIMU = new BNO055IMU.Parameters(); //Declares parameters object forIMU
+        parametersIMU.angleUnit = BNO055IMU.AngleUnit.DEGREES; //Sets the unit in which we measure orientation in degrees
+        parametersIMU.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC; //Sets acceleration unit in meters per second ??
+        parametersIMU.calibrationDataFile = "AdafruitIMUCalibration.json"; // see the calibration sample opmode, sets what file the IMU ueses
+        parametersIMU.loggingEnabled = true; //Sets wether logging in enable
+        parametersIMU.loggingTag = "IMU"; //Sets logging tag
+        parametersIMU.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator(); //Sets acceleration integration algorithm
+        parametersIMU.temperatureUnit = BNO055IMU.TempUnit.CELSIUS; //Sets units for temperature readings
+        imu = hardwareMap.get(BNO055IMU.class, "imu"); //Inits IMU
+        imu.initialize(parametersIMU); //Init IMU parameters (set above)
+        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES); //Gets current orientation of robot
+        telemetry.addData("Init Orientation", AngleUnit.DEGREES.fromUnit(angles.angleUnit, angles.firstAngle)); //Displays initial orientation
+        */
+
         //First picture
         if (isCameraAvailable()) {
             setCameraDownsampling(1);
@@ -78,9 +105,6 @@ public class DemoBallTarget extends LinearOpModeCamera {
 
 
             if (imageReady()) {
-                int redValueLeft = -76800;
-                int blueValueLeft = -76800;
-                int greenValueLeft = -76800;
 
                 Bitmap rgbImage;
                 //The last value must correspond to the downsampling value from above
@@ -90,23 +114,38 @@ public class DemoBallTarget extends LinearOpModeCamera {
                 SaveImage(rgbImage);
 
                 //Analyzing Jewel Color
-                for (int x = 0; x < rgbImage.getWidth(); x++) {
-                    for (int y = 0; y < rgbImage.getHeight(); y++) {
+                for (int y = 0; y < rgbImage.getHeight(); y++)
+                {
+
+                    for (int x = 0; x < rgbImage.getWidth(); x++)
+                    {
                         int pixel = rgbImage.getPixel(x, y);
+                        if(red(rgbImage.getPixel(x, y)) > 185 && green(rgbImage.getPixel(x, y)) < 20 && blue(rgbImage.getPixel(x, y)) < 35)
+                        {
+                            firstReadingBallXPixel = x;
+                            firstReadingBallYPixel = y;
+                        }
 
                     }
                 }
                 telemetry.addData("Width", rgbImage.getWidth());
                 telemetry.addData("Height", rgbImage.getHeight());
+                telemetry.addData("X Coord", firstReadingBallXPixel);
+                telemetry.addData("Y Coord", firstReadingBallYPixel);
+                telemetry.addData("Red Pixel", red(rgbImage.getPixel(firstReadingBallXPixel, firstReadingBallYPixel)));
+                telemetry.addData("Green Pixel", green(rgbImage.getPixel(firstReadingBallXPixel, firstReadingBallYPixel)));
+                telemetry.addData("Green Pixel", blue(rgbImage.getPixel(firstReadingBallXPixel, firstReadingBallYPixel)));
+
                 telemetry.update();
-                sleep(2000);
+                sleep(20000);
                 stopCamera();
 
 
             }
+        }
 
             //Second picture
-            sleep(2000);
+            /*sleep(2000);
             if (isCameraAvailable()) {
                 setCameraDownsampling(1);
 
@@ -141,6 +180,7 @@ public class DemoBallTarget extends LinearOpModeCamera {
 
                 }
 
+                drive.OrientationDrive(15, 0.65, motors, imu);
                 sleep(2000);
 
                 //Third picture
@@ -179,7 +219,7 @@ public class DemoBallTarget extends LinearOpModeCamera {
                     }
                 }
             }
+           */
         }
     }
-}
 
