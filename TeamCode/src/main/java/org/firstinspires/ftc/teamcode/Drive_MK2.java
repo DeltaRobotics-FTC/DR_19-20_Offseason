@@ -70,7 +70,7 @@ public class Drive_MK2 extends LinearOpMode
     motorPower - Desired motor power the drive motors will run at
     motors - Array that contains the drive motors. This is passed in so we can use the motors from an outside class (OpMode) in this class
      */
-    public boolean encoderDrive(int encoderDelta, driveStyle drive, double motorPower, DcMotor[] motors)
+    public boolean encoderDrive(double encoderDelta, driveStyle drive, double motorPower, DcMotor[] motors)
     {
         //ElapsedTime runtime = new ElapsedTime();
 

@@ -11,6 +11,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import java.lang.Math;
 
 import for_camera_opmodes.LinearOpModeCamera;
 
@@ -49,8 +50,11 @@ public class DemoBallTarget extends LinearOpModeCamera {
     //Conversion factor from pixels to encoder counts
     final double PIXEL_ENCODER = 0.694;
 
-    int firstReadingBallXPixel = 0;
-    int firstReadingBallYPixel = 0;
+    int ballXPixel = 0;
+    int ballYPixel = 0;
+
+    int xPixelDelta = 0;
+    int yPixelDelta = 0;
 
     Drive_MK2 drive = new Drive_MK2();
 
@@ -61,7 +65,7 @@ public class DemoBallTarget extends LinearOpModeCamera {
     @Override
     public void runOpMode() {
         //Maps motor objects to name in robot configuration
-        /*motorRF = hardwareMap.dcMotor.get("motorRF");
+        motorRF = hardwareMap.dcMotor.get("motorRF");
         motorRB = hardwareMap.dcMotor.get("motorRB");
         motorLF = hardwareMap.dcMotor.get("motorLF");
         motorLB = hardwareMap.dcMotor.get("motorLB");
@@ -92,7 +96,7 @@ public class DemoBallTarget extends LinearOpModeCamera {
         imu.initialize(parametersIMU); //Init IMU parameters (set above)
         angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES); //Gets current orientation of robot
         telemetry.addData("Init Orientation", AngleUnit.DEGREES.fromUnit(angles.angleUnit, angles.firstAngle)); //Displays initial orientation
-        */
+
 
         //First picture
         if (isCameraAvailable()) {
@@ -122,27 +126,40 @@ public class DemoBallTarget extends LinearOpModeCamera {
                         int pixel = rgbImage.getPixel(x, y);
                         if(red(rgbImage.getPixel(x, y)) > 185 && green(rgbImage.getPixel(x, y)) < 20 && blue(rgbImage.getPixel(x, y)) < 35)
                         {
-                            firstReadingBallXPixel = x;
-                            firstReadingBallYPixel = y;
+                            ballXPixel = x;
+                            ballYPixel = y;
                         }
 
                     }
                 }
                 telemetry.addData("Width", rgbImage.getWidth());
                 telemetry.addData("Height", rgbImage.getHeight());
-                telemetry.addData("X Coord", firstReadingBallXPixel);
-                telemetry.addData("Y Coord", firstReadingBallYPixel);
-                telemetry.addData("Red Pixel", red(rgbImage.getPixel(firstReadingBallXPixel, firstReadingBallYPixel)));
-                telemetry.addData("Green Pixel", green(rgbImage.getPixel(firstReadingBallXPixel, firstReadingBallYPixel)));
-                telemetry.addData("Green Pixel", blue(rgbImage.getPixel(firstReadingBallXPixel, firstReadingBallYPixel)));
+                telemetry.addData("X Coord", ballXPixel);
+                telemetry.addData("Y Coord", ballYPixel);
+                telemetry.addData("Red Pixel", red(rgbImage.getPixel(ballXPixel, ballYPixel)));
+                telemetry.addData("Green Pixel", green(rgbImage.getPixel(ballXPixel, ballYPixel)));
+                telemetry.addData("Green Pixel", blue(rgbImage.getPixel(ballXPixel, ballYPixel)));
 
                 telemetry.update();
-                sleep(20000);
+                sleep(1000);
                 stopCamera();
 
 
             }
         }
+
+        //Sets target deltas for movement
+        xPixelDelta = PIXEL_X_TARGET - ballXPixel;
+        yPixelDelta = PIXEL_Y_TARGET - ballYPixel;
+
+        //Orientating towards ball
+        drive.OrientationDrive((xPixelDelta * PIXEL_DEGREES), 0.6, motors, imu);
+        sleep(250);
+
+        //Moving towards ball
+        //IMPORTANT------- Changed the encoder delta argument to double for the sake of this program. If causes errors, change back!---------------------
+        drive.encoderDrive((yPixelDelta * PIXEL_ENCODER), driveStyle.BACKWARD, 0.8, motors);
+
 
             //Second picture
             /*sleep(2000);
