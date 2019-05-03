@@ -44,7 +44,10 @@ public class AutoSquare extends LinearOpMode
         drive.encoderDrive(300,driveStyle.FORWARD,0.8,motors);
         sleep(1000);
         drive.encoderDrive(300,driveStyle.STRAFE_LEFT,0.8,motors);
-        sleep(1000);
+        telemetry.addData("MotorLB Encoder", motorLB.getCurrentPosition());
+        telemetry.update();
+        sleep(3000);
+
         drive.encoderDrive(300,driveStyle.BACKWARD,0.8,motors);
 
 

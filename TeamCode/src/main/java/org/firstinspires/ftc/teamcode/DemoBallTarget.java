@@ -56,6 +56,8 @@ public class DemoBallTarget extends LinearOpModeCamera {
     int xPixelDelta = 0;
     int yPixelDelta = 0;
 
+    int backwardEncoderTarget = 0;
+
     Drive_MK2 drive = new Drive_MK2();
 
     BNO055IMU imu;
@@ -98,6 +100,8 @@ public class DemoBallTarget extends LinearOpModeCamera {
         telemetry.addData("Init Orientation", AngleUnit.DEGREES.fromUnit(angles.angleUnit, angles.firstAngle)); //Displays initial orientation
 
 
+
+
         //First picture
         if (isCameraAvailable()) {
             setCameraDownsampling(1);
@@ -124,11 +128,18 @@ public class DemoBallTarget extends LinearOpModeCamera {
                     for (int x = 0; x < rgbImage.getWidth(); x++)
                     {
                         int pixel = rgbImage.getPixel(x, y);
-                        if(red(rgbImage.getPixel(x, y)) > 185 && green(rgbImage.getPixel(x, y)) < 20 && blue(rgbImage.getPixel(x, y)) < 35)
+                        /*if(red(rgbImage.getPixel(x, y)) > 185 && green(rgbImage.getPixel(x, y)) < 20 && blue(rgbImage.getPixel(x, y)) < 35)
                         {
                             ballXPixel = x;
                             ballYPixel = y;
                         }
+                        */
+                        if(red(rgbImage.getPixel(x, y)) < 40 && red(rgbImage.getPixel(x, y)) > 20 && blue(rgbImage.getPixel(x, y)) > 220 && green(rgbImage.getPixel(x, y)) > 175)
+                        {
+                            ballXPixel = x;
+                            ballYPixel = y;
+                        }
+
 
                     }
                 }
@@ -138,10 +149,10 @@ public class DemoBallTarget extends LinearOpModeCamera {
                 telemetry.addData("Y Coord", ballYPixel);
                 telemetry.addData("Red Pixel", red(rgbImage.getPixel(ballXPixel, ballYPixel)));
                 telemetry.addData("Green Pixel", green(rgbImage.getPixel(ballXPixel, ballYPixel)));
-                telemetry.addData("Green Pixel", blue(rgbImage.getPixel(ballXPixel, ballYPixel)));
+                telemetry.addData("Blue Pixel", blue(rgbImage.getPixel(ballXPixel, ballYPixel)));
 
                 telemetry.update();
-                sleep(1000);
+                sleep(5000);
                 stopCamera();
 
 
@@ -152,91 +163,24 @@ public class DemoBallTarget extends LinearOpModeCamera {
         xPixelDelta = PIXEL_X_TARGET - ballXPixel;
         yPixelDelta = PIXEL_Y_TARGET - ballYPixel;
 
+        backwardEncoderTarget = (int)(yPixelDelta * PIXEL_ENCODER);
+
+        telemetry.addData("X Pixel Delta", xPixelDelta);
+        telemetry.addData("Y Pixel Delta", yPixelDelta);
+
+        telemetry.addData("Degrees to rotate", (xPixelDelta * PIXEL_DEGREES));
+        telemetry.addData("Encoder to go to", backwardEncoderTarget);
+        telemetry.update();
+        sleep(7000);
+
         //Orientating towards ball
         drive.OrientationDrive((xPixelDelta * PIXEL_DEGREES), 0.6, motors, imu);
-        sleep(250);
+        sleep(2000);
 
         //Moving towards ball
-        //IMPORTANT------- Changed the encoder delta argument to double for the sake of this program. If causes errors, change back!---------------------
-        drive.encoderDrive((yPixelDelta * PIXEL_ENCODER), driveStyle.BACKWARD, 0.8, motors);
+        drive.encoderDrive(backwardEncoderTarget, driveStyle.BACKWARD, 0.8, motors);
 
 
-            //Second picture
-            /*sleep(2000);
-            if (isCameraAvailable()) {
-                setCameraDownsampling(1);
-
-                startCamera();
-
-
-                if (imageReady()) {
-                    int redValueLeft = -76800;
-                    int blueValueLeft = -76800;
-                    int greenValueLeft = -76800;
-
-                    Bitmap rgbImage;
-                    //The last value must correspond to the downsampling value from above
-                    rgbImage = convertYuvImageToRgb(yuvImage, width, height, 1);
-
-
-                    SaveImage(rgbImage);
-
-                    //Analyzing Jewel Color
-                    for (int x = 0; x < rgbImage.getWidth(); x++) {
-                        for (int y = 0; y < rgbImage.getHeight(); y++) {
-                            int pixel = rgbImage.getPixel(x, y);
-
-                        }
-                    }
-                    telemetry.addData("Width", rgbImage.getWidth());
-                    telemetry.addData("Height", rgbImage.getHeight());
-                    telemetry.update();
-                    sleep(2000);
-                    stopCamera();
-
-
-                }
-
-                drive.OrientationDrive(15, 0.65, motors, imu);
-                sleep(2000);
-
-                //Third picture
-                if (isCameraAvailable()) {
-                    setCameraDownsampling(1);
-
-                    startCamera();
-
-
-                    if (imageReady()) {
-                        int redValueLeft = -76800;
-                        int blueValueLeft = -76800;
-                        int greenValueLeft = -76800;
-
-                        Bitmap rgbImage;
-                        //The last value must correspond to the downsampling value from above
-                        rgbImage = convertYuvImageToRgb(yuvImage, width, height, 1);
-
-
-                        SaveImage(rgbImage);
-
-                        //Analyzing Jewel Color
-                        for (int x = 0; x < rgbImage.getWidth(); x++) {
-                            for (int y = 0; y < rgbImage.getHeight(); y++) {
-                                int pixel = rgbImage.getPixel(x, y);
-
-                            }
-                        }
-                        telemetry.addData("Width", rgbImage.getWidth());
-                        telemetry.addData("Height", rgbImage.getHeight());
-                        telemetry.update();
-                        sleep(2000);
-                        stopCamera();
-
-
-                    }
-                }
-            }
-           */
         }
     }
 
