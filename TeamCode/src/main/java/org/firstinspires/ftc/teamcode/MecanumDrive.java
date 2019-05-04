@@ -39,7 +39,7 @@ public class MecanumDrive extends LinearOpMode
         motorRB.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        int target = 1680;
+        int target = 1680 + shooter.getCurrentPosition();
 
         waitForStart();
         while (opModeIsActive())
