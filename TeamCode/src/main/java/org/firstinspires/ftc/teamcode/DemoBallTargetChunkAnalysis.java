@@ -65,10 +65,11 @@ public class DemoBallTargetChunkAnalysis extends LinearOpModeCamera {
     //Rows first them columns
     int[] boxRows = new int[2];
 
-    final int IMAGE_CUTOFF = 600;
+    final int IMAGE_CUTOFF = 1280;
     final int BOX_SCALE = 4;
-    int boxNumber = 10;
+    int boxNumber = 6;
     int boxWidth = 0;
+    int boxHeight = 0;
 
     int backwardEncoderTarget = 0;
 
@@ -137,16 +138,19 @@ public class DemoBallTargetChunkAnalysis extends LinearOpModeCamera {
                 //The last value must correspond to the downsampling value from above
                 rgbImage = convertYuvImageToRgb(yuvImage, width, height, 1);
 
-                boxWidth = (rgbImage.getHeight() - IMAGE_CUTOFF) / (boxNumber / boxRows.length);
+                boxWidth = rgbImage.getWidth() / (boxNumber / boxRows.length);
+                boxHeight = (rgbImage.getHeight() - IMAGE_CUTOFF) / boxRows.length;
                 xMax = boxWidth;
                 xMin = 0;
-                yMax = boxWidth + IMAGE_CUTOFF;
+                yMax = boxHeight + IMAGE_CUTOFF;
                 yMin = IMAGE_CUTOFF;
 
                 telemetry.addData("Box Width", boxWidth);
+                telemetry.addData("Box Height", boxHeight);
                 telemetry.update();
+                sleep(2000);
 
-                for(int i = 0; i < boxRows.length; i++, yMin = boxWidth + IMAGE_CUTOFF, yMax = rgbImage.getHeight() - 1, xMin = 0, xMax = boxWidth)
+                for(int i = 0; i < boxRows.length; i++, yMin = boxHeight + IMAGE_CUTOFF, yMax = rgbImage.getHeight() - 1, xMin = 0, xMax = boxWidth)
                 {
                     telemetry.addData("yMin First Loop", yMin);
                     telemetry.addData("yMax First Loop", yMax);
