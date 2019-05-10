@@ -62,11 +62,18 @@ public class DemoBallTargetChunkAnalysis extends LinearOpModeCamera {
     int xMax = 0;
     int yMax = 0;
 
-    //Rows first them columns
-    int[] boxRows = new int[2];
+    int greatestRGBBlue = 0;
+    int greatestBlueBoxNumber = 0;
+    int currentBox = 1;
+    int blueXMin = 0;
+    int blueXMax = 0;
+    int blueYMin = 0;
+    int blueYMax = 0;
 
-    final int IMAGE_CUTOFF = 1280;
-    final int BOX_SCALE = 4;
+    //Rows first them columns
+    int boxRows = 2;
+
+    final int IMAGE_CUTOFF = 550;
     int boxNumber = 6;
     int boxWidth = 0;
     int boxHeight = 0;
@@ -138,8 +145,8 @@ public class DemoBallTargetChunkAnalysis extends LinearOpModeCamera {
                 //The last value must correspond to the downsampling value from above
                 rgbImage = convertYuvImageToRgb(yuvImage, width, height, 1);
 
-                boxWidth = rgbImage.getWidth() / (boxNumber / boxRows.length);
-                boxHeight = (rgbImage.getHeight() - IMAGE_CUTOFF) / boxRows.length;
+                boxWidth = rgbImage.getWidth() / (boxNumber / boxRows);
+                boxHeight = (rgbImage.getHeight() - IMAGE_CUTOFF) / boxRows;
                 xMax = boxWidth;
                 xMin = 0;
                 yMax = boxHeight + IMAGE_CUTOFF;
@@ -150,7 +157,7 @@ public class DemoBallTargetChunkAnalysis extends LinearOpModeCamera {
                 telemetry.update();
                 sleep(2000);
 
-                for(int i = 0; i < boxRows.length; i++, yMin = boxHeight + IMAGE_CUTOFF, yMax = rgbImage.getHeight() - 1, xMin = 0, xMax = boxWidth)
+                for(int i = 0; i < boxRows; i++, yMin = boxHeight + IMAGE_CUTOFF, yMax += boxHeight - 1, xMin = 0, xMax = boxWidth)
                 {
                     telemetry.addData("yMin First Loop", yMin);
                     telemetry.addData("yMax First Loop", yMax);
@@ -158,21 +165,22 @@ public class DemoBallTargetChunkAnalysis extends LinearOpModeCamera {
                     telemetry.addData("xMax First Loop", xMax);
                     telemetry.update();
                     sleep(5000);
-                    for(int v = 0; v < (boxNumber / 2); v++, xMin += boxWidth - 1, xMax += boxWidth - 1)
+
+                    for(int v = 0; v < (boxNumber / boxRows); v++, xMin += boxWidth - 1, xMax += boxWidth - 1)
                     {
                         for (int x = xMin; x <= xMax; x++) {
                             for (int y = yMin; y <= yMax; y++) {
                                 if (x == xMax && y <= yMax) {
-                                    rgbImage.setPixel(x, y, Color.rgb(0, 255, 0));
+                                    rgbImage.setPixel(x, y, Color.rgb(255, 0, 0));
                                 }
                                 if (x <= xMax && y == yMin) {
-                                    rgbImage.setPixel(x, y, Color.rgb(0, 255, 0));
+                                    rgbImage.setPixel(x, y, Color.rgb(255, 0, 0));
                                 }
                                 if (x == xMin && y <= yMax) {
-                                    rgbImage.setPixel(x, y, Color.rgb(0, 255, 0));
+                                    rgbImage.setPixel(x, y, Color.rgb(255, 0, 0));
                                 }
                                 if (x <= xMax && y == yMax) {
-                                    rgbImage.setPixel(x, y, Color.rgb(0, 255, 0));
+                                    rgbImage.setPixel(x, y, Color.rgb(255, 0, 0));
 
                                 }
                             }
@@ -182,7 +190,73 @@ public class DemoBallTargetChunkAnalysis extends LinearOpModeCamera {
                 }
 
 
+
+
+                /*for (int x = blueXMin; x <= blueXMax; x++) {
+                    for (int y = blueYMin; y <= blueYMax; y++) {
+                        if (x == blueXMax && y <= blueYMax) {
+                            rgbImage.setPixel(x, y, Color.rgb(0, 0, 255));
+                        }
+                        if (x <= blueXMax && y == blueYMin) {
+                            rgbImage.setPixel(x, y, Color.rgb(0, 0, 255));
+                        }
+                        if (x == blueXMin && y <= blueYMax) {
+                            rgbImage.setPixel(x, y, Color.rgb(0, 0, 255));
+                        }
+                        if (x <= blueXMax && y == blueYMax) {
+                            rgbImage.setPixel(x, y, Color.rgb(0, 0, 255));
+
+                        }
+                    }
+                }
+                */
+
+
+
                 SaveImage(rgbImage);
+                sleep(5000);
+                boxWidth = rgbImage.getWidth() / (boxNumber / boxRows);
+                boxHeight = (rgbImage.getHeight() - IMAGE_CUTOFF) / boxRows;
+                xMax = boxWidth;
+                xMin = 0;
+                yMax = boxHeight + IMAGE_CUTOFF;
+                yMin = IMAGE_CUTOFF;
+
+                for(int i = 0; i < boxRows; i++, yMin = boxHeight + IMAGE_CUTOFF, yMax += boxHeight - 1, xMin = 0, xMax = boxWidth)
+                {
+
+                    for(int v = 0; v < (boxNumber / boxRows); v++, xMin += boxWidth - 1, xMax += boxWidth - 1, currentBox++)
+                    {
+                        for (int x = xMin; x < xMax; x++)
+                        {
+                            for (int y = yMin; y < yMax; y++)
+                            {
+                                int pixel = rgbImage.getPixel(x, y);
+                                redValueLeft += red(pixel);
+                                blueValueLeft += blue(pixel);
+                                greenValueLeft += green(pixel);
+                            }
+                        }
+                        redValueLeft = normalizePixels(redValueLeft);
+                        blueValueLeft = normalizePixels(blueValueLeft);
+                        greenValueLeft = normalizePixels(greenValueLeft);
+
+                        if(blueValueLeft > greatestRGBBlue)
+                        {
+                            greatestRGBBlue = blueValueLeft;
+                            greatestBlueBoxNumber = currentBox;
+                            blueXMax = xMax;
+                            blueXMin = xMin;
+                            blueYMax = yMax;
+                            blueYMin = yMin;
+                        }
+
+                    }
+
+                }
+                telemetry.addData("Greatest Blue", greatestRGBBlue);
+                telemetry.addData("Box Number", greatestBlueBoxNumber);
+                telemetry.update();
                 sleep(5000);
 
                 //Analyzing Jewel Color
@@ -220,7 +294,10 @@ public class DemoBallTargetChunkAnalysis extends LinearOpModeCamera {
                 sleep(5000);
                 stopCamera();
 
+
+
 */
+                    stopCamera();
             }
         }
 
