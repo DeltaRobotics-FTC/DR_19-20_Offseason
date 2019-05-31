@@ -4,20 +4,18 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+
+import javax.crypto.spec.DESedeKeySpec;
 
 import for_camera_opmodes.LinearOpModeCamera;
 
 //This is a test comment for a test commit :)
 @Autonomous(name = "DemoBallTargetChunkAnalysis", group = "")
-public class DemoBallTargetChunkAnalysis extends LinearOpModeCamera {
+public class GraidentChunkAnalysis extends LinearOpModeCamera {
 
     //This sets the motorXX to DcMotor Objects
     DcMotor motorRF = null;
@@ -57,7 +55,11 @@ public class DemoBallTargetChunkAnalysis extends LinearOpModeCamera {
     int xPixelDelta = 0;
     int yPixelDelta = 0;
 
+    final int BOX_NUMBER_DECAY = 2;
 
+
+    double boxHeightPercentScaler;
+    double boxHeightPercent;
 
     int xMin = 0;
     int yMin = 0;
@@ -72,11 +74,12 @@ public class DemoBallTargetChunkAnalysis extends LinearOpModeCamera {
     int blueYMin = 0;
     int blueYMax = 0;
 
+    int boxNumber = 20;
+
     //Rows first them columns
     int boxRows = 1;
 
     final int IMAGE_CUTOFF = 550;
-    int boxNumber = 6;
     int boxWidth = 0;
     int boxHeight = 0;
 
@@ -147,8 +150,11 @@ public class DemoBallTargetChunkAnalysis extends LinearOpModeCamera {
                 //The last value must correspond to the downsampling value from above
                 rgbImage = convertYuvImageToRgb(yuvImage, width, height, 1);
 
-                boxWidth = rgbImage.getWidth() / (boxNumber / boxRows);
-                boxHeight = (rgbImage.getHeight() - IMAGE_CUTOFF) / boxRows;
+                boxRows = boxNumber / BOX_NUMBER_DECAY;
+                boxHeightPercentScaler = 0.25 / boxRows;
+                boxHeightPercent = boxHeightPercentScaler;
+                boxWidth = rgbImage.getWidth() / boxNumber;
+                boxHeight = (int)((rgbImage.getHeight() - IMAGE_CUTOFF) / boxRows);
                 xMax = boxWidth;
                 xMin = 0;
                 yMax = boxHeight + IMAGE_CUTOFF;
@@ -159,7 +165,7 @@ public class DemoBallTargetChunkAnalysis extends LinearOpModeCamera {
                 telemetry.update();
                 sleep(2000);
 
-                for(int i = 0; i < boxRows; i++, yMin = boxHeight + IMAGE_CUTOFF, yMax += boxHeight - 1, xMin = 0, xMax = boxWidth)
+                for(int i = 0; i < boxRows; i++, boxHeightPercent += boxHeightPercentScaler, boxHeight = (int)((rgbImage.getHeight() - IMAGE_CUTOFF) *  boxHeightPercent), boxWidth = rgbImage.getWidth() / boxNumber,  yMin = boxHeight + IMAGE_CUTOFF, yMax += boxHeight - 1, xMin = 0, xMax = boxWidth)
                 {
                     telemetry.addData("yMin First Loop", yMin);
                     telemetry.addData("yMax First Loop", yMax);
@@ -168,7 +174,7 @@ public class DemoBallTargetChunkAnalysis extends LinearOpModeCamera {
                     telemetry.update();
                     sleep(5000);
 
-                    for(int v = 0; v < (boxNumber / boxRows); v++, xMin += boxWidth - 1, xMax += boxWidth - 1)
+                    for(int v = 0; v < (boxNumber -= BOX_NUMBER_DECAY); v++, xMin += boxWidth - 1, xMax += boxWidth - 1)
                     {
                         for (int x = xMin; x <= xMax; x++) {
                             for (int y = yMin; y <= yMax; y++) {
