@@ -14,7 +14,7 @@ import javax.crypto.spec.DESedeKeySpec;
 import for_camera_opmodes.LinearOpModeCamera;
 
 //This is a test comment for a test commit :)
-@Autonomous(name = "DemoBallTargetChunkAnalysis", group = "")
+@Autonomous(name = "GraidentChunkAnalysis", group = "")
 public class GraidentChunkAnalysis extends LinearOpModeCamera {
 
     //This sets the motorXX to DcMotor Objects
